@@ -1,0 +1,65 @@
+#include <Servo.h>
+#include <LiquidCrystal.h>
+
+int SensorTempPino=0;
+int AlertaTempBaixa=8;
+int AlertaTempAlta=13;
+int TempBaixa=0;
+int TempAlta=40;
+int inches = 0;
+int cm = 0;
+Servo servoMotor;
+long readUltrasonicDistance(int pin)
+{
+  pinMode(pin, OUTPUT); 
+  digitalWrite(pin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(pin, LOW);
+  pinMode(pin, INPUT);
+  return pulseIn(pin, HIGH);
+}
+
+long uvc(int cm){
+  if(cm<300){ 
+      digitalWrite(13, LOW);
+  }else
+  digitalWrite(13, HIGH);
+}
+void setup()
+{
+   pinMode(13, OUTPUT);
+  pinMode(2, OUTPUT);
+  pinMode(7, INPUT);
+  Serial.begin(9600);
+  servoMotor.attach(9);
+  	pinMode(AlertaTempBaixa, OUTPUT);
+	pinMode(AlertaTempAlta, OUTPUT);
+}
+void loop()
+{
+  cm = 0.01723 * readUltrasonicDistance(7);
+  inches = (cm / 2.54);
+  Serial.print(inches);
+  Serial.print("in, ");
+  Serial.print(cm);
+  servoMotor.write(cm );
+  Serial.println("cm");
+  delay(100); 
+  uvc(cm );
+  int SensorTempTensao=analogRead(SensorTempPino);
+  float Tensao=SensorTempTensao*5;
+	Tensao/=1024;
+  float TemperaturaC=(Tensao-0.5)*100;
+  if (TemperaturaC>=TempAlta) {
+  		digitalWrite(2, HIGH);
+    }
+  	else if (TemperaturaC<=TempBaixa){
+  		digitalWrite(2, LOW);
+  	}
+  	else {
+  		digitalWrite(2, LOW);
+    }
+  Serial.print(TemperaturaC); 
+}
